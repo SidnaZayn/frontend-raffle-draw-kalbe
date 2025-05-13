@@ -2,13 +2,55 @@
 defineOptions({
   name: 'IndexPage',
 })
-const user = useUserStore()
-const name = ref(user.savedName)
+const pemenang = ref(['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'])
+const pemenangNew = ref(['1', '1', '1', '1', '1', '1', '1', '1', '1', '8'])
 
-const router = useRouter()
-function go() {
-  if (name.value)
-    router.push(`/hi/${encodeURIComponent(name.value)}`)
+async function getPemenang() {
+  const pemenang = await fetch('http://localhost:3000/peserta/get-random')
+  const data: string = await pemenang.json()
+  return data.split('')
+}
+
+async function updatePemenang() {
+  await fetch('http://localhost:3000/peserta/update-status', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      nik: pemenangNew.value.join(''),
+    }),
+  })
+}
+
+function drumRoll() {
+  const audio = new Audio('/drum-roll-NEW.mp3')
+  audio.play()
+}
+function cymbal() {
+  const audio = new Audio('/cymbal.mp3')
+  audio.play()
+}
+
+async function go() {
+  pemenangNew.value = await getPemenang()
+  drumRoll()
+  for (let i = 0; i < pemenang.value.length; i++) {
+    const shuffling_interval = setInterval(() => {
+      pemenang.value[i] = (Math.floor(Math.random() * 9) + 1).toString()
+    }, 75)
+
+    setTimeout(() => {
+      clearInterval(shuffling_interval)
+      pemenang.value[i] = pemenangNew.value[i]
+
+      if (i === pemenang.value.length - 1) {
+        cymbal()
+      }
+    }, 1000 * (i + 1))
+  }
+
+  await updatePemenang()
 }
 
 const { t } = useI18n()
@@ -24,7 +66,7 @@ useHead({
     </div>
     <p>
       <a rel="noreferrer" href="https://github.com/antfu/vitesse" target="_blank">
-        Vitesse
+        Kalbe Undian Doorprize
       </a>
     </p>
     <p>
@@ -32,22 +74,20 @@ useHead({
     </p>
 
     <div py-4 />
-
-    <TheInput
-      v-model="name"
-      :placeholder="t('intro.whats-your-name')"
-      autocomplete="false"
-      @keydown.enter="go"
-    />
-    <label class="hidden" for="input">{{ t('intro.whats-your-name') }}</label>
-
-    <div>
-      <button
-        m-3 text-sm btn
-        :disabled="!name"
-        @click="go"
+    <div grid grid-cols-10 mx-auto gap-2 w="3/4">
+      <div
+        v-for="i in pemenang" :key="i" border="1 solid gray-800" flex items-center justify-center rounded-xl
+        h="10rem"
       >
-        {{ t('button.go') }}
+        <p text-9xl font-bold>
+          {{ i }}
+        </p>
+      </div>
+    </div>
+
+    <div mt-10>
+      <button m-3 rounded-2xl p-5 text-5xl font-bold btn @click="go">
+        Undi Sekarang !
       </button>
     </div>
   </div>
