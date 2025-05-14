@@ -17,7 +17,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div border="1 solid gray-800" mx-auto mb-8 flex-col items-center justify-center rounded-xl py-6 w="3/4">
+  <div border="1 solid white" mx-auto mb-8 flex-col items-center justify-center rounded-xl py-6 w="3/4">
     <p font-bold>
       Hadiah Saat Ini:
     </p>

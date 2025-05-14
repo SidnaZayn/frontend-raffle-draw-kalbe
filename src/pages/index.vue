@@ -15,6 +15,8 @@ const pemenangNew = ref({ id: 0, nik: ['1', '1', '1', '1', '1', '1', '1', '1', '
 type RollingStatus = 'not rolling' | 'on rolling' | 'done rolling'
 const onRolling = ref<RollingStatus>('not rolling')
 
+const animationOn = ref(false)
+
 async function getPemenang() {
   const pemenang = await fetch(`${api}/peserta/get-random`)
   const data: any = await pemenang.json()
@@ -63,6 +65,11 @@ function drumRoll() {
 function cymbal() {
   const audio = new Audio('/cymbal.mp3')
   audio.play()
+
+  animationOn.value = true
+  setTimeout(() => {
+    animationOn.value = false
+  }, 3000)
 }
 
 async function go() {
@@ -89,24 +96,19 @@ async function go() {
   await updatePemenang()
 }
 
-const { t } = useI18n()
 useHead({
-  title: () => t('button.home'),
+  title: 'HUT Kalbe 59 - undian doorprize',
 })
 </script>
 
 <template>
   <div>
-    <div text-4xl>
-      <div i-carbon-campsite inline-block />
+    <AnimationAfterDraw v-if="animationOn" />
+    <div mb-5 flex items-center justify-center>
+      <img src="/Kalbe_Farma.svg.png" alt="logo kalbe" w="20">
     </div>
     <p>
-      <a rel="noreferrer" href="https://github.com/antfu/vitesse" target="_blank">
-        Kalbe Undian Doorprize
-      </a>
-    </p>
-    <p>
-      <em text-sm opacity-75>{{ t('intro.desc') }}</em>
+      HUT Kalbe 59 - Undian Doorprize
     </p>
 
     <div py-4 />
@@ -115,7 +117,7 @@ useHead({
 
     <div grid grid-cols-10 mx-auto gap-2 w="3/4">
       <div
-        v-for="i in pemenang" :key="i" border="1 solid gray-800" flex items-center justify-center rounded-xl
+        v-for="i in pemenang" :key="i" border="1 solid white" flex items-center justify-center rounded-xl
         h="10rem"
       >
         <p text-9xl font-bold>
@@ -132,8 +134,8 @@ useHead({
         Loading...
       </button>
       <button
-        m-3 v-else-if="onRolling === 'done rolling'" rounded-2xl bg-yellow-600 p-5 text-5xl font-bold btn hover:bg-yellow-700
-        @click="nextHadiah"
+        v-else-if="onRolling === 'done rolling'" m-3 rounded-2xl bg-yellow-600 p-5 text-5xl font-bold btn
+        hover:bg-yellow-700 @click="nextHadiah"
       >
         Next
       </button>
