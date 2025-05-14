@@ -6,8 +6,8 @@ defineOptions({
 })
 const hadiahStore = useHadiahStore()
 
-// const api = 'http://18.136.205.102:5000'
-const api = 'http://localhost:3000'
+const api = 'http://18.136.205.102:5000'
+// const api = 'http://localhost:3000'
 
 const pemenang = ref(['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'])
 const pemenangNew = ref({ id: 0, nik: ['1', '1', '1', '1', '1', '1', '1', '1', '1', '8'] })
