@@ -1,24 +1,57 @@
 <script setup lang="ts">
+import { useHadiahStore } from '~/stores/hadiah'
+
 defineOptions({
   name: 'IndexPage',
 })
+const hadiahStore = useHadiahStore()
+
+// const api = 'http://18.136.205.102:5000'
+const api = 'http://localhost:3000'
+
 const pemenang = ref(['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'])
-const pemenangNew = ref(['1', '1', '1', '1', '1', '1', '1', '1', '1', '8'])
+const pemenangNew = ref({ id: 0, nik: ['1', '1', '1', '1', '1', '1', '1', '1', '1', '8'] })
+
+type RollingStatus = 'not rolling' | 'on rolling' | 'done rolling'
+const onRolling = ref<RollingStatus>('not rolling')
 
 async function getPemenang() {
-  const pemenang = await fetch('http://localhost:3000/peserta/get-random')
-  const data: string = await pemenang.json()
-  return data.split('')
+  const pemenang = await fetch(`${api}/peserta/get-random`)
+  const data: any = await pemenang.json()
+  return data
+}
+
+async function getHadiah() {
+  const hadiah = await fetch(`${api}/hadiah`)
+  hadiahStore.hadiahList = await hadiah.json()
+}
+
+async function nextHadiah() {
+  await getHadiah()
+  pemenang.value = ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+  onRolling.value = 'not rolling'
 }
 
 async function updatePemenang() {
-  await fetch('http://localhost:3000/peserta/update-status', {
+  await fetch(`${api}/peserta/update-status`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      nik: pemenangNew.value.join(''),
+      nik: pemenangNew.value.nik,
+    }),
+  })
+
+  // update pemenang in hadiah
+  const hadiahId = hadiahStore.hadiahList[hadiahStore.currentHadiah].id
+  await fetch(`${api}/hadiah/update-pemenang/${hadiahId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      pemenangId: pemenangNew.value.id,
     }),
   })
 }
@@ -33,19 +66,22 @@ function cymbal() {
 }
 
 async function go() {
+  onRolling.value = 'on rolling'
   pemenangNew.value = await getPemenang()
   drumRoll()
+
   for (let i = 0; i < pemenang.value.length; i++) {
     const shuffling_interval = setInterval(() => {
       pemenang.value[i] = (Math.floor(Math.random() * 9) + 1).toString()
     }, 75)
 
-    setTimeout(() => {
+    setTimeout(async () => {
       clearInterval(shuffling_interval)
-      pemenang.value[i] = pemenangNew.value[i]
+      pemenang.value[i] = pemenangNew.value.nik[i]
 
       if (i === pemenang.value.length - 1) {
         cymbal()
+        onRolling.value = 'done rolling'
       }
     }, 1000 * (i + 1))
   }
@@ -74,6 +110,9 @@ useHead({
     </p>
 
     <div py-4 />
+
+    <DoorprizeBox />
+
     <div grid grid-cols-10 mx-auto gap-2 w="3/4">
       <div
         v-for="i in pemenang" :key="i" border="1 solid gray-800" flex items-center justify-center rounded-xl
@@ -86,8 +125,17 @@ useHead({
     </div>
 
     <div mt-10>
-      <button m-3 rounded-2xl p-5 text-5xl font-bold btn @click="go">
+      <button v-if="onRolling === 'not rolling'" m-3 rounded-2xl p-5 text-5xl font-bold btn @click="go">
         Undi Sekarang !
+      </button>
+      <button v-else-if="onRolling === 'on rolling'" disabled m-3 rounded-2xl p-5 text-5xl font-bold btn>
+        Loading...
+      </button>
+      <button
+        m-3 v-else-if="onRolling === 'done rolling'" rounded-2xl bg-yellow-600 p-5 text-5xl font-bold btn hover:bg-yellow-700
+        @click="nextHadiah"
+      >
+        Next
       </button>
     </div>
   </div>
