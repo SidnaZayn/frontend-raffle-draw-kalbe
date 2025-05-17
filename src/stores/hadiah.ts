@@ -1,6 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
 export const useHadiahStore = defineStore('user', () => {
+  const apiURL = import.meta.env.VITE_API_URL
   const hadiahList = ref([{ nama: 'Hadiah 1', id: 1 }])
   const currentHadiah = ref(0)
 
@@ -24,6 +25,7 @@ export const useHadiahStore = defineStore('user', () => {
   }
 
   return {
+    apiURL,
     currentHadiah,
     hadiahList,
     move,

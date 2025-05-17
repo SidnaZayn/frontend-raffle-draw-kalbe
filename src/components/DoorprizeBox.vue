@@ -3,7 +3,7 @@ import { useHadiahStore } from '~/stores/hadiah'
 
 const hadiahStore = useHadiahStore()
 
-const api = 'http://18.136.205.102:5000'
+const api = hadiahStore.apiURL
 // const api = 'http://localhost:3000'
 
 async function getHadiah() {
